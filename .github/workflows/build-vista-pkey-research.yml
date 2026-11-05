@@ -7,6 +7,7 @@ on:
     paths:
       - 'vista_pkey2005_research.py'
       - 'vista_pkey2005_crypto_audit.py'
+      - 'vista_pkey2005_public_arithmetic_audit.py'
       - '.github/workflows/build-vista-pkey-research.yml'
 
 permissions:
@@ -28,6 +29,9 @@ jobs:
         run: python -m pip install --upgrade pip==23.1.2
       - run: python -m pip install pyinstaller==3.6
 
+      - name: Run public arithmetic self-tests
+        run: python vista_pkey2005_public_arithmetic_audit.py --self-test
+
       - name: Build standalone executables
         shell: pwsh
         run: |
@@ -35,15 +39,21 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Inspector build failed' }
           pyinstaller --clean --onefile --console --name VistaPKEY2005-CryptoAudit vista_pkey2005_crypto_audit.py
           if ($LASTEXITCODE -ne 0) { throw 'Crypto audit build failed' }
+          pyinstaller --clean --onefile --console --name VistaPKEY2005-PublicArithmetic vista_pkey2005_public_arithmetic_audit.py
+          if ($LASTEXITCODE -ne 0) { throw 'Public arithmetic audit build failed' }
           New-Item -ItemType Directory -Force -Path release | Out-Null
           Copy-Item dist/VistaPKEY2005-Inspector.exe release/
           Copy-Item dist/VistaPKEY2005-CryptoAudit.exe release/
+          Copy-Item dist/VistaPKEY2005-PublicArithmetic.exe release/
           @'
           Vista PKEY2005 Research Tools
           ============================
 
           These are standalone command-line research utilities.
-          They inspect public configuration data only. They do not generate
+          They inspect public configuration data only. PublicArithmetic checks
+          all 14 compressed points on the documented K3 twist and checks the
+          stored pairing element's subgroup-order relation in K6.
+          They do not generate
           product keys, recover signing secrets, verify Microsoft's complete
           PKEY2005 signatures, or activate Windows.
 
@@ -55,6 +65,8 @@ jobs:
           Usage examples:
             VistaPKEY2005-Inspector.exe pkeyconfig.xrm-ms -o report.json
             VistaPKEY2005-CryptoAudit.exe pkeyconfig.xrm-ms -o crypto-report.json
+            VistaPKEY2005-PublicArithmetic.exe pkeyconfig.xrm-ms -o arithmetic-report.json
+            VistaPKEY2005-PublicArithmetic.exe --self-test
 
           Run from Command Prompt in the folder containing the EXEs and config.
           '@ | Set-Content -Encoding ASCII release/README.txt

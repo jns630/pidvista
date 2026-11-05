@@ -1,0 +1,44 @@
+name: Build VistaPidGenXCheck
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up MSVC x64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Compile x64 executable
+        shell: cmd
+        run: >-
+          cl /nologo /EHsc /W3 /O2 /MT /DUNICODE /D_UNICODE /D_WIN32_WINNT=0x0600
+          VistaPidGenXCheck.cpp
+          /link /MACHINE:X64 /SUBSYSTEM:CONSOLE,6.00 /OUT:VistaPidGenXCheck.exe
+
+      - name: Verify executable architecture and subsystem
+        shell: pwsh
+        run: |
+          if (!(Test-Path VistaPidGenXCheck.exe)) { throw 'EXE was not produced.' }
+          $dump = & dumpbin /headers VistaPidGenXCheck.exe
+          $dump | Out-File -Encoding utf8 build-headers.txt
+          if (($dump -join "`n") -notmatch '8664 machine') { throw 'Output is not x64.' }
+          if (($dump -join "`n") -notmatch '6\.00 subsystem') { throw 'Subsystem version is not 6.00.' }
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: VistaPidGenXCheck-x64
+          path: |
+            VistaPidGenXCheck.exe
+            build-headers.txt
+          if-no-files-found: error

@@ -8,6 +8,7 @@ on:
       - 'vista_pkey2005_research.py'
       - 'vista_pkey2005_crypto_audit.py'
       - 'vista_pkey2005_public_arithmetic_audit.py'
+      - 'vista_phone_activation_assistant.py'
       - '.github/workflows/build-vista-pkey-research.yml'
 
 permissions:
@@ -41,12 +42,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Crypto audit build failed' }
           pyinstaller --clean --onefile --console --name VistaPKEY2005-PublicArithmetic vista_pkey2005_public_arithmetic_audit.py
           if ($LASTEXITCODE -ne 0) { throw 'Public arithmetic audit build failed' }
+          pyinstaller --clean --onefile --windowed --name VistaPhoneActivationAssistant vista_phone_activation_assistant.py
+          if ($LASTEXITCODE -ne 0) { throw 'Phone activation assistant build failed' }
           New-Item -ItemType Directory -Force -Path release | Out-Null
           Copy-Item dist/VistaPKEY2005-Inspector.exe release/
           Copy-Item dist/VistaPKEY2005-CryptoAudit.exe release/
           Copy-Item dist/VistaPKEY2005-PublicArithmetic.exe release/
+          Copy-Item dist/VistaPhoneActivationAssistant.exe release/
           @'
-          Vista PKEY2005 Research Tools
+          Vista PKEY2005 Research Tools and Phone Activation Assistant
           ============================
 
           These are standalone command-line research utilities.
@@ -56,6 +60,11 @@ jobs:
           They do not generate
           product keys, recover signing secrets, verify Microsoft's complete
           PKEY2005 signatures, or activate Windows.
+
+          VistaPhoneActivationAssistant.exe launches the built-in slui.exe 4
+          phone activation wizard and formats/copies a 63-digit IID and a
+          48-digit CID. It does not generate, obtain, authenticate, or submit
+          a CID. A CID must be supplied through Microsoft's supported channel.
 
           Vista compatibility is targeted using Python 3.7.9 and PyInstaller
           3.6, but must still be tested on the actual Vista SP2 computer.

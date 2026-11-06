@@ -137,3 +137,45 @@ It does not generate product keys, recover or derive Microsoft's private
 signing material, patch licensing binaries, alter validation results, or
 activate Windows. Keep product keys, installation IDs, confirmation IDs, and
 personal licensing data out of source control and CI logs.
+
+
+## Randomization flag and Product ID research
+
+A separate read-only audit of the same configuration hash
+(`792455ee1f192dd77ec6dec882742ddabfa873f222b2456e152f9263b557de10`)
+found:
+
+- All **211/211** configuration entries have `IsRandomized=false`.
+- This is true across Retail (64), OEM:NONSLP (52), OEM:COA (37),
+  OEM:SLP (34), Volume:GVLK (13), Volume:MAK (6), and Volume:CSVLK (5).
+- All **1,120/1,120** key-range references join to a configuration by
+  `RefActConfigId`; all 211 configurations have at least one range.
+- The ranges contain **791 distinct part-number strings**.
+- Key-range EULA labels are a separate field from the parent configuration's
+  `ProductKeyType`; preserve both when analyzing records.
+
+### Product ID / Advanced PID limitation
+
+The embedded XML contains configuration IDs, group references, edition IDs,
+descriptions, key types, the randomization flag, and key-range metadata. It
+does **not** contain an explicit Product ID template, Advanced PID template,
+or PID-generation algorithm. The PidGenX output therefore cannot be
+reconstructed from these XML fields alone. Treat PID generation as native
+PidGenX/licensing behavior unless an authoritative separate specification is
+found.
+
+The Home Premium PidGenX test and the Home Basic `slmgr /dlv` screenshot
+refer to different product identities. The latter reports the installed
+Home Basic system as Licensed; it does not show that the separately tested
+Home Premium key was installed or activated.
+
+Full methodology and caveats:
+[Vista PKEY configuration: randomization and PID-field audit](research/VISTA_PKEYCONFIG_RANDOMIZATION_AND_PID.md)
+
+Machine-readable reports:
+- `vista_pkeyconfig_randomization_audit.csv`
+- `vista_pkeyconfig_randomization_audit.json`
+
+These are configuration observations only. They do not prove ownership,
+transferability, online activation, or global validity, and do not enable
+product-key generation.

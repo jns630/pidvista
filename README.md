@@ -87,9 +87,7 @@ largest configuration count (41). All 14 records use the PKEY2005 algorithm
 and have distinct complete-record and pairing-reference hashes. These are
 configuration/fingerprint findings, not signature-verification results.
 
-Machine-readable snapshots generated from the same source file:
-- `vista_pkey2005_all_group_matrix.csv`
-- `vista_pkey2005_all_group_matrix.json`
+A downloadable CSV snapshot is provided with the research update in this conversation.
 
 ## Randomization and Product ID limitations
 

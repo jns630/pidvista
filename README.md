@@ -62,14 +62,21 @@ single MSDN-labelled range attached to that configuration. The parent
 configuration still has `ProductKeyType=Retail`; EULA and ProductKeyType
 are distinct fields.
 
-The Home Basic Retail configuration references group 142, which is shared
-by several key types in the file. The Home Premium OEM:COA configuration
-references group 144, which is used only by OEM:COA configurations in this
-file. Their public-key record hashes differ. This does not establish
-independently generated signing keys or prove signature validity.
+Group 142 is referenced by **23 configurations and 392 key ranges** across
+six ProductKeyType categories: Retail, Volume:CSVLK, Volume:MAK,
+Volume:GVLK, OEM:NONSLP, and OEM:COA. Its 13 Retail configurations span
+multiple Vista editions and add-on products. Because the public-key table is
+indexed by GroupId, all 23 configurations resolve to the same group-142
+public-key record. This does not make their product keys interchangeable.
 
-Detailed comparison and reproduction method:
-[Retail Home Basic PidGenX comparison: group 142 vs group 144](research/VISTA_RETAIL_HOMEBASIC_GROUP142_COMPARISON.md)
+The Home Premium OEM:COA configuration references group 144, which is used
+only by OEM:COA configurations in this file. Its public-key record differs
+from group 142. This does not establish independently generated signing keys
+or prove signature validity.
+
+Detailed comparisons:
+- [Retail Home Basic PidGenX comparison: group 142 vs group 144](research/VISTA_RETAIL_HOMEBASIC_GROUP142_COMPARISON.md)
+- [Group 142 cross-configuration reuse audit](research/VISTA_GROUP142_CROSS_CONFIGURATION_AUDIT.md)
 
 ## Randomization and Product ID limitations
 

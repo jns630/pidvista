@@ -75,8 +75,21 @@ from group 142. This does not establish independently generated signing keys
 or prove signature validity.
 
 Detailed comparisons:
+- [Complete 14-group configuration and public-key fingerprint matrix](research/VISTA_PKEY2005_ALL_GROUP_MATRIX.md)
 - [Retail Home Basic PidGenX comparison: group 142 vs group 144](research/VISTA_RETAIL_HOMEBASIC_GROUP142_COMPARISON.md)
 - [Group 142 cross-configuration reuse audit](research/VISTA_GROUP142_CROSS_CONFIGURATION_AUDIT.md)
+
+The complete matrix shows that group 144 is OEM:COA-only in this supplied
+configuration file (7 configurations, 33 ranges). Groups 148, 160, and 162
+are also OEM:COA-only, each with one configuration. Group 142 is the broadest
+mixed-channel group (23 configurations, 392 ranges), while group 152 has the
+largest configuration count (41). All 14 records use the PKEY2005 algorithm
+and have distinct complete-record and pairing-reference hashes. These are
+configuration/fingerprint findings, not signature-verification results.
+
+Machine-readable snapshots generated from the same source file:
+- `vista_pkey2005_all_group_matrix.csv`
+- `vista_pkey2005_all_group_matrix.json`
 
 ## Randomization and Product ID limitations
 

@@ -104,11 +104,11 @@ Sensitive IDs and complete product keys are intentionally omitted here.
 
 ## 5. Reproducibility
 
-The companion audit files are:
+The audit can be reproduced by parsing the Base64 `infoBin` payload, counting
+`Configuration` entries by `IsRandomized`, then joining each
+`KeyRange.RefActConfigId` to `Configuration.ActConfigId`. Check the source
+file hash before comparing results from another configuration release.
 
-- `vista_pkeyconfig_randomization_audit.csv`: one row per configuration.
-- `vista_pkeyconfig_randomization_audit.json`: aggregate counts and schema
-  conclusions.
-
-Source file hash should be checked before comparing results from another
-configuration release.
+A downloadable CSV and JSON snapshot were generated during this research
+session; the repository's Markdown note is the committed record of the
+findings.

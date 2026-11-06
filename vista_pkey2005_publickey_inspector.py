@@ -36,10 +36,11 @@ def inspect(blob, group_id=""):
     must_zero, size_mod, size_order = f[8], f[9], f[10]
     d1, d2 = u32(f, 11), u32(f, 15)
     unused = {hex(o): u32(f, o) for o in (19, 23, 27, 35, 39, 43)}
-    npoints, maxq = u32(f, 31), f[47]
-    if not size_bn or size_mod != size_bn or not size_order or not d1 or not d2 or not npoints:
+    offset_modulus = u32(f, 31)
+    point_count, maxq = size_mod, f[47]
+    if not size_bn or size_mod != size_bn or not size_order or not d1 or not d2 or not point_count:
         raise ValueError("invalid zero or inconsistent dimensions")
-    if npoints > 1024 or d1*d2 > 4096:
+    if point_count > 1024 or d1*d2 > 4096:
         raise ValueError("implausible dimensions")
     cur = 48
     def take(n, name):
@@ -49,7 +50,7 @@ def inspect(blob, group_id=""):
             raise ValueError(name + " exceeds field-data region")
         cur = z
         return [fs+a, fs+z]
-    h1 = take(npoints, "H1 radix vector")
+    h1 = take(size_mod, "H1 radix vector")
     modulus = take(size_mod, "modulus")
     order = take(size_order, "order")
     poly1 = take(d1+1, "extension polynomial 1")
@@ -60,7 +61,7 @@ def inspect(blob, group_id=""):
     curve_b = take(size_bn, "curve b")
     padding = f[cur:]
     point_size = 6*size_bn
-    p0, p1 = fe, fe+npoints*point_size
+    p0, p1 = fe, fe+point_count*point_size
     pairing_size = d1*d2*size_bn
     q1 = p1+pairing_size
     if q1 != len(blob):
@@ -74,7 +75,8 @@ def inspect(blob, group_id=""):
         "size_bignum": size_bn, "must_be_zero": must_zero,
         "size_modulus": size_mod, "size_order": size_order,
         "extension_degree_1": d1, "extension_degree_2": d2,
-        "documented_unused_words": unused, "num_points_and_h1_radices": npoints,
+        "documented_unused_words": unused, "offset_modulus": offset_modulus,
+        "point_count_from_size_modulus": point_count,
         "max_quotient_byte": maxq, "h1_radix_vector_bounds": h1,
         "modulus_bounds": modulus, "order_bounds": order,
         "extension_polynomial_1_bounds": poly1, "extension_polynomial_2_bounds": poly2,

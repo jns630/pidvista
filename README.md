@@ -61,25 +61,34 @@ six ProductKeyType categories. Group 144 is used only by OEM:COA
 configurations in this file. The two screenshot observations resolve to
 different groups and different serialized public-key records.
 
-Detailed comparisons:
+Detailed configuration comparisons:
 - [Complete 14-group configuration and public-key fingerprint matrix](research/VISTA_PKEY2005_ALL_GROUP_MATRIX.md)
 - [Retail Home Basic PidGenX comparison: group 142 vs group 144](research/VISTA_RETAIL_HOMEBASIC_GROUP142_COMPARISON.md)
 - [Group 142 cross-configuration reuse audit](research/VISTA_GROUP142_CROSS_CONFIGURATION_AUDIT.md)
-- [PKEY2005 public-key byte-structure comparison](research/VISTA_PKEY2005_PUBLICKEY_BYTE_STRUCTURE.md)
 
-## Public-key byte-structure findings
+## Public-key binary format alignment
 
-All 14 decoded public-key records are 1,579 bytes. Bytes 0–318 (319 bytes)
-are identical across all groups. Bytes 319–1578 (1,260 bytes) are group
-specific, with 14 distinct suffixes. Partitioning the suffix into 15
-consecutive 84-byte blocks for descriptive comparison shows 14 distinct
-values in every block. Across the 91 record pairs, byte-position Hamming
-distances range from 1,246 to 1,258.
+All 14 decoded public-key records are 1,579 bytes. The first 12 bytes are
+the outer record header; its little-endian field-data length is 307 bytes.
+Thus the complete common prefix is 12 + 307 = **319 bytes**, identical
+across all 14 groups.
 
-This establishes a common serialized prefix and extensive group-specific
-suffix variation. The 84-byte partition is descriptive, not a semantic
-field map. These byte differences do not prove independently generated
-signing keys or constitute signature verification.
+The remaining 1,260 bytes align with the documented PKEY2005 schema as
+14 × 84-byte point records followed by one 84-byte stored pairing value.
+This explains the 15 blocks in the earlier byte comparison: 14 point entries
+and the final pairing-reference entry. Every one of those blocks differs
+across all 14 groups in this supplied configuration.
+
+The field map is based on the public UMSKT PKEY2005 write-up; the byte
+alignment and equality results are independently observed from the supplied
+Vista configuration file. This does not prove independent key generation,
+signature validity, or activation.
+
+Detailed note:
+[Vista PKEY2005 public-key format alignment](research/VISTA_PKEY2005_PUBLICKEY_FORMAT_ALIGNMENT.md)
+
+Additional byte-level comparison:
+[PKEY2005 public-key byte-structure comparison](research/VISTA_PKEY2005_PUBLICKEY_BYTE_STRUCTURE.md)
 
 ## Randomization and Product ID limitations
 

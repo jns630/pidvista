@@ -40,12 +40,6 @@ All 1,120 key-range references matched a configuration entry. All 211
 configurations had at least one range. All 211 had `IsRandomized=false` in
 this particular file. There were 791 distinct part-number strings.
 
-The 14 public-key records share the same recovered field modulus, subgroup
-order, and curve coefficients in the prior public-parameter audit, but their
-serialized records and pairing-reference fields have distinct hashes.
-These structural checks are not the final PKEY2005 signature/pairing
-verification for a product key.
-
 ## Native PidGenX observations
 
 Two user-run offline PidGenX tests have been documented, with complete keys
@@ -63,42 +57,36 @@ configuration still has `ProductKeyType=Retail`; EULA and ProductKeyType
 are distinct fields.
 
 Group 142 is referenced by **23 configurations and 392 key ranges** across
-six ProductKeyType categories: Retail, Volume:CSVLK, Volume:MAK,
-Volume:GVLK, OEM:NONSLP, and OEM:COA. Its 13 Retail configurations span
-multiple Vista editions and add-on products. Because the public-key table is
-indexed by GroupId, all 23 configurations resolve to the same group-142
-public-key record. This does not make their product keys interchangeable.
-
-The Home Premium OEM:COA configuration references group 144, which is used
-only by OEM:COA configurations in this file. Its public-key record differs
-from group 142. This does not establish independently generated signing keys
-or prove signature validity.
+six ProductKeyType categories. Group 144 is used only by OEM:COA
+configurations in this file. The two screenshot observations resolve to
+different groups and different serialized public-key records.
 
 Detailed comparisons:
 - [Complete 14-group configuration and public-key fingerprint matrix](research/VISTA_PKEY2005_ALL_GROUP_MATRIX.md)
 - [Retail Home Basic PidGenX comparison: group 142 vs group 144](research/VISTA_RETAIL_HOMEBASIC_GROUP142_COMPARISON.md)
 - [Group 142 cross-configuration reuse audit](research/VISTA_GROUP142_CROSS_CONFIGURATION_AUDIT.md)
+- [PKEY2005 public-key byte-structure comparison](research/VISTA_PKEY2005_PUBLICKEY_BYTE_STRUCTURE.md)
 
-The complete matrix shows that group 144 is OEM:COA-only in this supplied
-configuration file (7 configurations, 33 ranges). Groups 148, 160, and 162
-are also OEM:COA-only, each with one configuration. Group 142 is the broadest
-mixed-channel group (23 configurations, 392 ranges), while group 152 has the
-largest configuration count (41). All 14 records use the PKEY2005 algorithm
-and have distinct complete-record and pairing-reference hashes. These are
-configuration/fingerprint findings, not signature-verification results.
+## Public-key byte-structure findings
 
-A downloadable CSV snapshot is provided with the research update in this conversation.
+All 14 decoded public-key records are 1,579 bytes. Bytes 0–318 (319 bytes)
+are identical across all groups. Bytes 319–1578 (1,260 bytes) are group
+specific, with 14 distinct suffixes. Partitioning the suffix into 15
+consecutive 84-byte blocks for descriptive comparison shows 14 distinct
+values in every block. Across the 91 record pairs, byte-position Hamming
+distances range from 1,246 to 1,258.
+
+This establishes a common serialized prefix and extensive group-specific
+suffix variation. The 84-byte partition is descriptive, not a semantic
+field map. These byte differences do not prove independently generated
+signing keys or constitute signature verification.
 
 ## Randomization and Product ID limitations
 
-The XML contains configuration IDs, group references, edition IDs,
-descriptions, key types, the randomization flag, and key-range metadata.
-It does **not** contain an explicit Product ID template, Advanced PID
-template, or PID-generation algorithm. PID generation therefore cannot be
-reconstructed from these XML fields alone.
-
-Full methodology:
-[Vista PKEY configuration: randomization and PID-field audit](research/VISTA_PKEYCONFIG_RANDOMIZATION_AND_PID.md)
+All 211 configurations in the supplied file have `IsRandomized=false`.
+The XML does not contain an explicit Product ID template, Advanced PID
+template, or PID-generation algorithm. See:
+[Randomization and PID-field audit](research/VISTA_PKEYCONFIG_RANDOMIZATION_AND_PID.md).
 
 ## Sample-key cryptographic status
 
@@ -106,8 +94,8 @@ Preliminary Base24 and curve-point checks were structurally consistent, but
 the complete PKEY2005 signature/pairing comparison was not performed. The
 offline arithmetic result must therefore be described as **unverified**,
 not confirmed valid or invalid. A local PidGenX acceptance result is a
-separate native observation, not a substitute for claiming online activation
-or licence ownership.
+separate native observation, not a substitute for online activation or
+licence ownership.
 
 ## Research scripts
 

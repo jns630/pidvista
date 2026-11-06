@@ -11,167 +11,94 @@ to process a product key locally. It is not a key generator or activation bypass
 - Artifact name: `VistaPidGenXCheck-x64`
 - Target: x64 Windows Vista (subsystem version 6.00), built with the static MSVC CRT.
 
-The checker loads:
-
-- `C:\\Windows\\System32\\pidgenx.dll`
-- `C:\\Windows\\System32\\licensing\\pkeyconfig\\pkeyconfig.xrm-ms`
-
-It prompts for a key on the Vista computer and calls the local `PidGenX` export.
-The key is not written to a file or transmitted by this program. The program
-wipes its in-memory input buffer after the call. Do not paste keys into GitHub
-issues, workflow inputs, logs, commits, or this README.
-
-### Build and test
-
-1. Open the repository's **Actions** tab.
-2. Select **Build VistaPidGenXCheck**.
-3. Choose **Run workflow**.
-4. Download the `VistaPidGenXCheck-x64` artifact from the completed run.
-5. Extract it and copy `VistaPidGenXCheck.exe` to a Windows Vista SP2 x64
-   installation that has its normal licensing components.
-6. Run it locally from Command Prompt and enter the test key at its prompt.
-
-The workflow only compiles and checks the executable's architecture/subsystem.
-It cannot run Vista's PidGenX DLL on the hosted Windows runner. The actual
-validation step must be performed on the Vista machine. This build target is
-not proof of runtime compatibility; report any missing DLL, entry-point, or
-runtime error exactly as displayed.
+The checker loads the installed Vista `pidgenx.dll` and matching
+`pkeyconfig.xrm-ms`, prompts for a key locally, and does not save or transmit
+the key. Keep keys and machine-specific licensing identifiers out of source
+control, CI logs, and public screenshots.
 
 ### Interpreting the result
 
 - **HRESULT 0:** the local PidGenX DLL/configuration pair accepted the input
-  for local product-ID processing. This is a positive local validation result
-  for that installed configuration.
-- **Nonzero HRESULT:** PidGenX did not accept/process the input. It is not, by
-  itself, proof that a key is globally invalid; check edition, channel,
-  configuration-file version, and the exact HRESULT.
-- Neither result proves licence ownership, transferability, genuine status,
-  or that Windows is activated. Activation is a separate licensing state.
+  for local product-ID processing.
+- **Nonzero HRESULT:** PidGenX did not accept/process the input. Check the
+  installed configuration, product edition, channel, and exact HRESULT.
+- Neither result proves ownership, transferability, genuine entitlement,
+  or activation. Activation is a separate licensing state.
 
-The checker is currently hard-coded for the Vista x64 system paths. Do not use
-it as an XP/Windows 7 checker or assume that an arbitrary copied
-`pkeyconfig.xrm-ms` is interchangeable with the configuration installed on
-the target machine.
+## Supplied Vista configuration inventory
 
-## Public Vista PKEY2005 configuration findings
-
-The supplied configuration files examined during this research were byte-for-byte
-identical:
+The supplied configuration files examined during this research were identical:
 
 - Size: **620,662 bytes**
 - SHA-256: `792455ee1f192dd77ec6dec882742ddabfa873f222b2456e152f9263b557de10`
-- Embedded configuration: **211 Configuration entries**, **1,120 KeyRange entries**
-- Public-key groups: **14**, with IDs **140, 142, 144, 146, 148, 150, 152, 154,
-  156, 158, 160, 162, 164, 166**
-- Each decoded public-key record: **1,579 bytes**
-- Algorithm identifier: `msft:rm/algorithm/pkey/2005`
+- Embedded XML: **211 Configuration entries**, **1,120 KeyRange entries**
+- Public-key groups: **14** (IDs 140 through 166, even numbers)
+- Decoded public-key records: **1,579 bytes** each
+- Algorithm: `msft:rm/algorithm/pkey/2005`
 
-The public-parameter audit scripts in this repository inspect the XML structure,
-record sizes and hashes, field parameters, extension-field arithmetic, curve
-points, and stored pairing-element subgroup consistency. The independent
-arithmetic audit uses:
+All 1,120 key-range references matched a configuration entry. All 211
+configurations had at least one range. All 211 had `IsRandomized=false` in
+this particular file. There were 791 distinct part-number strings.
 
-- Base field modulus:
-  `886368969471450739924935101400677`
-- Subgroup order:
-  `886368969471450710152985728350703`
-- Cubic extension relation: `u^3 + u + 4 = 0`
-- Quadratic extension relation: `t^2 + 2 = 0`
-- The stored point records are checked against the documented quadratic-twist
-  curve equation over the cubic extension field.
-- The audit checks the stored pairing element's nonzero value and
-  `c^n = 1` subgroup relation.
+The 14 public-key records share the same recovered field modulus, subgroup
+order, and curve coefficients in the prior public-parameter audit, but their
+serialized records and pairing-reference fields have distinct hashes.
+These structural checks are not the final PKEY2005 signature/pairing
+verification for a product key.
 
-These are public-parameter consistency checks. They are not the final
-PKEY2005 signature/pairing comparison for a product key.
+## Native PidGenX observations
 
-## Sample-key investigation status
+Two user-run offline PidGenX tests have been documented, with complete keys
+and machine-specific identifiers omitted:
 
-A sample Vista key was examined offline during the conversation; its literal
-value is intentionally omitted from the repository.
+| Test | Edition | ProductKeyType | EULA | Group ID | HRESULT |
+|---|---|---|---|---:|---|
+| A | Vista Home Premium | OEM:COA | OEM | 144 | `0x0` |
+| B | Vista Home Basic | Retail | MSDN | 142 | `0x0` |
 
-Established preliminary observations:
+Test B's Activation ID matched the Home Basic Retail configuration in the
+supplied XML. Its Edition ID `X13-04106` matched the part number on the
+single MSDN-labelled range attached to that configuration. The parent
+configuration still has `ProductKeyType=Retail`; EULA and ProductKeyType
+are distinct fields.
 
-- Base24 decoding with the Windows product-key alphabet produced a 112-bit
-  integer.
-- The quotient on division by the recovered field modulus was **4**. This
-  passed the preliminary quotient-bound check discussed in the public
-  PKEY2005 research.
-- The decoded x-coordinate admitted curve y-coordinate candidates on the
-  reconstructed base curve.
-- These checks establish structural plausibility only.
+The Home Basic Retail configuration references group 142, which is shared
+by several key types in the file. The Home Premium OEM:COA configuration
+references group 144, which is used only by OEM:COA configurations in this
+file. Their public-key record hashes differ. This does not establish
+independently generated signing keys or prove signature validity.
 
-**Final cryptographic verdict: UNVERIFIED.** The complete PKEY2005 signature
-verification/pairing comparison was not performed. Therefore the sample key
-must not be described as confirmed valid or confirmed invalid based on these
-offline calculations. The local Vista PidGenX test above is the next
-independent validation step.
+Detailed comparison and reproduction method:
+[Retail Home Basic PidGenX comparison: group 142 vs group 144](research/VISTA_RETAIL_HOMEBASIC_GROUP142_COMPARISON.md)
+
+## Randomization and Product ID limitations
+
+The XML contains configuration IDs, group references, edition IDs,
+descriptions, key types, the randomization flag, and key-range metadata.
+It does **not** contain an explicit Product ID template, Advanced PID
+template, or PID-generation algorithm. PID generation therefore cannot be
+reconstructed from these XML fields alone.
+
+Full methodology:
+[Vista PKEY configuration: randomization and PID-field audit](research/VISTA_PKEYCONFIG_RANDOMIZATION_AND_PID.md)
+
+## Sample-key cryptographic status
+
+Preliminary Base24 and curve-point checks were structurally consistent, but
+the complete PKEY2005 signature/pairing comparison was not performed. The
+offline arithmetic result must therefore be described as **unverified**,
+not confirmed valid or invalid. A local PidGenX acceptance result is a
+separate native observation, not a substitute for claiming online activation
+or licence ownership.
 
 ## Research scripts
 
 - `vista_pkey2005_research.py` — XML/configuration structure inspector.
 - `vista_pkey2005_crypto_audit.py` — public parameter and record audit.
-- `vista_pkey2005_public_arithmetic_audit.py` — independent extension-field,
-  twist-point, and pairing-subgroup consistency audit.
+- `vista_pkey2005_public_arithmetic_audit.py` — public arithmetic consistency audit.
 - `VistaPidGenXCheck.cpp` — local native PidGenX diagnostic.
 
-Run the arithmetic self-tests with:
-
-```sh
-python vista_pkey2005_public_arithmetic_audit.py --self-test
-```
-
-Run an audit against a configuration file with:
-
-```sh
-python vista_pkey2005_public_arithmetic_audit.py pkeyconfig.xrm-ms -o arithmetic-report.json
-python vista_pkey2005_crypto_audit.py pkeyconfig.xrm-ms -o crypto-report.json
-python vista_pkey2005_research.py pkeyconfig.xrm-ms -o config-report.json
-```
-
-## Scope and safety
-
-This project is limited to read-only inspection, public-parameter consistency
-checks, and local validation using Microsoft's installed licensing component.
-It does not generate product keys, recover or derive Microsoft's private
-signing material, patch licensing binaries, alter validation results, or
-activate Windows. Keep product keys, installation IDs, confirmation IDs, and
-personal licensing data out of source control and CI logs.
-
-
-## Randomization flag and Product ID research
-
-A separate read-only audit of the same configuration hash
-(`792455ee1f192dd77ec6dec882742ddabfa873f222b2456e152f9263b557de10`)
-found:
-
-- All **211/211** configuration entries have `IsRandomized=false`.
-- This is true across Retail (64), OEM:NONSLP (52), OEM:COA (37),
-  OEM:SLP (34), Volume:GVLK (13), Volume:MAK (6), and Volume:CSVLK (5).
-- All **1,120/1,120** key-range references join to a configuration by
-  `RefActConfigId`; all 211 configurations have at least one range.
-- The ranges contain **791 distinct part-number strings**.
-- Key-range EULA labels are a separate field from the parent configuration's
-  `ProductKeyType`; preserve both when analyzing records.
-
-### Product ID / Advanced PID limitation
-
-The embedded XML contains configuration IDs, group references, edition IDs,
-descriptions, key types, the randomization flag, and key-range metadata. It
-does **not** contain an explicit Product ID template, Advanced PID template,
-or PID-generation algorithm. The PidGenX output therefore cannot be
-reconstructed from these XML fields alone. Treat PID generation as native
-PidGenX/licensing behavior unless an authoritative separate specification is
-found.
-
-The Home Premium PidGenX test and the Home Basic `slmgr /dlv` screenshot
-refer to different product identities. The latter reports the installed
-Home Basic system as Licensed; it does not show that the separately tested
-Home Premium key was installed or activated.
-
-Full methodology and caveats:
-[Vista PKEY configuration: randomization and PID-field audit](research/VISTA_PKEYCONFIG_RANDOMIZATION_AND_PID.md)
-
-These are configuration observations only. They do not prove ownership,
-transferability, online activation, or global validity, and do not enable
-product-key generation.
+The project is limited to read-only configuration inspection, public-parameter
+consistency checks, and local validation through Microsoft's installed
+licensing component. It does not generate keys, recover private signing
+material, patch licensing binaries, bypass validation, or activate Windows.

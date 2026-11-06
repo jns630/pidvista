@@ -90,6 +90,20 @@ Detailed note:
 Additional byte-level comparison:
 [PKEY2005 public-key byte-structure comparison](research/VISTA_PKEY2005_PUBLICKEY_BYTE_STRUCTURE.md)
 
+## Field-data structural parser
+
+The 307-byte field-data region has been audited against the published PKEY2005
+binary layout. The documented members consume 153 bytes; the remaining 154
+bytes are zero padding in all 14 supplied records. The parser checks the outer
+and inner headers, member bounds, 14 × 84-byte point vector, and 84-byte
+pairing-reference boundary.
+
+- Parser: [vista_pkey2005_publickey_inspector.py](vista_pkey2005_publickey_inspector.py)
+- Audit: [Field-data structural audit](research/VISTA_PKEY2005_FIELDDATA_STRUCTURAL_AUDIT.md)
+
+Run with `python vista_pkey2005_publickey_inspector.py pkeyconfig.xrm-ms -o inspection.json`.
+This is structural inspection only, not product-key or signature validation.
+
 ## Randomization and Product ID limitations
 
 All 211 configurations in the supplied file have `IsRandomized=false`.

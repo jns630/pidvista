@@ -65,6 +65,8 @@ Detailed configuration comparisons:
 - [Complete 14-group configuration and public-key fingerprint matrix](research/VISTA_PKEY2005_ALL_GROUP_MATRIX.md)
 - [Retail Home Basic PidGenX comparison: group 142 vs group 144](research/VISTA_RETAIL_HOMEBASIC_GROUP142_COMPARISON.md)
 - [Group 142 cross-configuration reuse audit](research/VISTA_GROUP142_CROSS_CONFIGURATION_AUDIT.md)
+- [Group-to-licensing metadata map](research/VISTA_PKEY2005_GROUP_LICENSING_METADATA_MAP.md)
+- [Configuration-level group analysis](research/VISTA_PKEY2005_CONFIGURATION_LEVEL_GROUP_ANALYSIS.md)
 
 ## Public-key binary format alignment
 
@@ -110,23 +112,43 @@ The read-only [public-parameter sanity checker](vista_pkey2005_public_parameter_
 checks field dimensions, probable primality, polynomial coefficient bounds,
 and curve non-singularity. Results are documented in the
 [public-parameter sanity audit](research/VISTA_PKEY2005_PUBLIC_PARAMETER_SANITY_AUDIT.md).
-These checks do not verify points, signatures, pairings, or activation.
+
+## Unified public-data audit
+
+The [unified audit script](vista_pkey2005_unified_public_audit.py) combines
+record parsing, shared field-data checks, probable-prime tests, extension
+polynomial irreducibility checks, twist-curve membership, and scalar
+multiplication `[m]Q = O` for every serialized public point.
+
+Run:
+
+```sh
+python vista_pkey2005_unified_public_audit.py pkeyconfig.xrm-ms -o public-audit.json
+```
+
+On the supplied 620,662-byte file, the local test run reported 14 groups,
+196/196 points on the documented twist curve, and 196/196 points annihilated
+by the declared order. All groups shared identical field-data bytes.
+
+**Pairing-reference limitation:** the unified script checks that the six
+serialized coefficients are canonical and the reference is nonzero. It
+deliberately does not claim `c^m = 1` or recompute the Tate pairing, because
+the exact field-basis/serialization interpretation still needs independent
+confirmation. This script is public-data consistency tooling, not a PKEY2005
+signature verifier.
 
 ## Public-point curve-membership audit
 
-All 196 serialized public points across the 14 supplied groups were checked
-against the documented twisted-curve equation over K3; all 196 passed.
-The [point-curve checker](vista_pkey2005_point_curve_check.py) and
-[ detailed audit ](research/VISTA_PKEY2005_POINT_CURVE_MEMBERSHIP_AUDIT.md)
-record the model and limitations. This is not signature or pairing verification.
+The earlier [point-curve checker](vista_pkey2005_point_curve_check.py) and
+[point-curve audit](research/VISTA_PKEY2005_POINT_CURVE_MEMBERSHIP_AUDIT.md)
+document the twist-curve model and initial curve-membership result.
 
 ## Signature-verification readiness
 
 The public PKEY2005 pairing-verification model and remaining unknowns are
 summarized in [Signature-verification readiness](research/VISTA_PKEY2005_SIGNATURE_VERIFICATION_READINESS.md).
-The structural inspector is not a signature verifier. Its field map was
-corrected to treat field-data offset `0x1f` as `offset_modulus`; the point
-count is derived from `size_modulus`.
+The structural inspector's field map treats field-data offset `0x1f` as
+`offset_modulus`; the point count is derived from `size_modulus`.
 
 ## Randomization and Product ID limitations
 
@@ -149,6 +171,7 @@ licence ownership.
 - `vista_pkey2005_research.py` — XML/configuration structure inspector.
 - `vista_pkey2005_crypto_audit.py` — public parameter and record audit.
 - `vista_pkey2005_public_arithmetic_audit.py` — public arithmetic consistency audit.
+- `vista_pkey2005_unified_public_audit.py` — reproducible public point/subgroup audit.
 - `VistaPidGenXCheck.cpp` — local native PidGenX diagnostic.
 
 The project is limited to read-only configuration inspection, public-parameter

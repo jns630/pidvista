@@ -104,6 +104,14 @@ pairing-reference boundary.
 Run with `python vista_pkey2005_publickey_inspector.py pkeyconfig.xrm-ms -o inspection.json`.
 This is structural inspection only, not product-key or signature validation.
 
+## Signature-verification readiness
+
+The public PKEY2005 pairing-verification model and remaining unknowns are
+summarized in [Signature-verification readiness](research/VISTA_PKEY2005_SIGNATURE_VERIFICATION_READINESS.md).
+The structural inspector is not a signature verifier. Its field map was
+corrected to treat field-data offset `0x1f` as `offset_modulus`; the point
+count is derived from `size_modulus`.
+
 ## Randomization and Product ID limitations
 
 All 211 configurations in the supplied file have `IsRandomized=false`.

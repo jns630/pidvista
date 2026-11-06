@@ -112,6 +112,14 @@ and curve non-singularity. Results are documented in the
 [public-parameter sanity audit](research/VISTA_PKEY2005_PUBLIC_PARAMETER_SANITY_AUDIT.md).
 These checks do not verify points, signatures, pairings, or activation.
 
+## Public-point curve-membership audit
+
+All 196 serialized public points across the 14 supplied groups were checked
+against the documented twisted-curve equation over K3; all 196 passed.
+The [point-curve checker](vista_pkey2005_point_curve_check.py) and
+[ detailed audit ](research/VISTA_PKEY2005_POINT_CURVE_MEMBERSHIP_AUDIT.md)
+record the model and limitations. This is not signature or pairing verification.
+
 ## Signature-verification readiness
 
 The public PKEY2005 pairing-verification model and remaining unknowns are

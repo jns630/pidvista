@@ -104,6 +104,14 @@ pairing-reference boundary.
 Run with `python vista_pkey2005_publickey_inspector.py pkeyconfig.xrm-ms -o inspection.json`.
 This is structural inspection only, not product-key or signature validation.
 
+## Public-parameter sanity audit
+
+The read-only [public-parameter sanity checker](vista_pkey2005_public_parameter_sanity.py)
+checks field dimensions, probable primality, polynomial coefficient bounds,
+and curve non-singularity. Results are documented in the
+[public-parameter sanity audit](research/VISTA_PKEY2005_PUBLIC_PARAMETER_SANITY_AUDIT.md).
+These checks do not verify points, signatures, pairings, or activation.
+
 ## Signature-verification readiness
 
 The public PKEY2005 pairing-verification model and remaining unknowns are

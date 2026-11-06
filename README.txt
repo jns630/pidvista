@@ -1,40 +1,101 @@
-VistaPidGenXCheck — cloud build package
-=======================================
+pidvista — Windows Vista PKEY2005 research and local validation
+=================================================================
 
-This package builds a 64-bit Windows console EXE using GitHub Actions. It is
-configured with a Windows Vista (6.00) PE subsystem target and static MSVC CRT
-linking (/MT). The source calls the local Vista PidGenX DLL/config only; it does
-not install a key, activate Windows, or make network requests at runtime.
+The repository contains read-only Vista PKEY2005 configuration research and a
+local diagnostic that calls the PidGenX export from the installed Vista system.
+It does not generate keys, modify licensing state, bypass validation, or
+activate Windows.
 
-BUILD STEPS (phone-friendly)
-----------------------------
-1. Sign in to https://github.com/ and create a NEW empty repository.
-2. Upload the files/folders from this package, preserving this structure:
-     VistaPidGenXCheck.cpp
-     README.txt
-     .github/workflows/build.yml
-3. Open the repository's Actions tab.
-4. Select “Build VistaPidGenXCheck” in the left panel.
-5. Press “Run workflow”, then the green “Run workflow” button.
-6. Wait for the run to finish successfully.
-7. Open that completed run. At the bottom, under Artifacts, download
-   “VistaPidGenXCheck-x64”. It is a ZIP containing the EXE and build headers.
-8. Extract the ZIP and copy VistaPidGenXCheck.exe to the Vista x64 computer.
+LOCAL VALIDATOR
+---------------
+Source: VistaPidGenXCheck.cpp
+Workflow: .github/workflows/c-cpp.yml
+Artifact: VistaPidGenXCheck-x64
 
-IMPORTANT COMPATIBILITY NOTE
-----------------------------
-The executable is built as x64 and marked with Windows subsystem version 6.00.
-The build uses /MT to avoid a separate Visual C++ runtime installation. This
-is a Vista-targeted build configuration, but final runtime compatibility still
-needs testing on the actual Vista SP2 machine. Do not run it on a production
-machine if Windows reports a missing DLL or unsupported entry point; report
-that exact message so the build can be adjusted.
+The x64 checker loads:
+  C:\Windows\System32\pidgenx.dll
+  C:\Windows\System32\licensing\pkeyconfig\pkeyconfig.xrm-ms
 
-SECURITY
---------
-The GitHub workflow compiles source code only. It does not receive a product
-key. Enter your key only into the locally run program on your Vista computer.
-Do not commit or upload any product key, PID, CID, or personal license data.
+To build:
+1. Open the private repository's Actions tab.
+2. Select "Build VistaPidGenXCheck".
+3. Select "Run workflow".
+4. Download the VistaPidGenXCheck-x64 artifact.
+5. Copy the EXE to Vista SP2 x64 and run it locally.
+6. Enter the test key only at the local prompt.
 
-The program's PidGenX output is an offline local result, not proof of genuine
-licensing, ownership, transferability, or activation.
+The workflow compiles and checks the PE architecture/subsystem. It cannot run
+Vista's PidGenX DLL on the hosted runner. Actual PidGenX testing must occur on
+the Vista computer. The key is not sent by this program; never put keys in
+workflow inputs, repository files, logs, or issues.
+
+Interpretation:
+- HRESULT 0 means the installed local PidGenX/config pair accepted the input
+  for local product-ID processing.
+- A nonzero HRESULT means local processing failed; inspect the exact HRESULT,
+  edition/channel, and local configuration version.
+- This is not an activation result or proof of licence ownership or transfer.
+
+PUBLIC CONFIGURATION FINDINGS
+-----------------------------
+Three supplied configuration copies were identical:
+  Size:   620,662 bytes
+  SHA256: 792455ee1f192dd77ec6dec882742ddabfa873f222b2456e152f9263b557de10
+
+Decoded structure:
+  211 Configuration entries
+  1,120 KeyRange entries
+  14 public-key groups: 140, 142, 144, 146, 148, 150, 152, 154,
+                        156, 158, 160, 162, 164, 166
+  1,579 bytes per decoded public-key record
+  Algorithm: msft:rm/algorithm/pkey/2005
+
+Public parameters recovered by the audit:
+  p = 886368969471450739924935101400677
+  n = 886368969471450710152985728350703
+  K3 polynomial: u^3 + u + 4
+  K6/K3 polynomial: t^2 + 2
+
+The arithmetic audit checks public record structure, probable-prime
+consistency, extension-field operations, twist points, and the stored pairing
+element's subgroup relation. It is not a complete product-key signature test.
+
+SAMPLE-KEY STATUS
+-----------------
+The sample key examined offline decoded to a 112-bit Base24 integer. Its
+quotient on division by p was 4 and passed the preliminary quotient-bound
+check. Its x-coordinate admitted candidate y coordinates on the reconstructed
+base curve. These checks are only preliminary structural plausibility checks.
+
+FINAL VERDICT: UNVERIFIED. The complete PKEY2005 signature/pairing comparison
+was not performed. Do not label the sample key valid or invalid from these
+partial checks. Test it with the local Vista PidGenX checker.
+
+RESEARCH UTILITIES
+------------------
+vista_pkey2005_research.py
+  XML/configuration structure inspector.
+
+vista_pkey2005_crypto_audit.py
+  Public record and parameter audit.
+
+vista_pkey2005_public_arithmetic_audit.py
+  Extension-field, twist-point, and pairing-subgroup consistency audit.
+
+VistaPidGenXCheck.cpp
+  Local PidGenX diagnostic; Vista x64 paths are currently hard-coded.
+
+Self-test:
+  python vista_pkey2005_public_arithmetic_audit.py --self-test
+
+Config audits:
+  python vista_pkey2005_public_arithmetic_audit.py pkeyconfig.xrm-ms -o arithmetic-report.json
+  python vista_pkey2005_crypto_audit.py pkeyconfig.xrm-ms -o crypto-report.json
+  python vista_pkey2005_research.py pkeyconfig.xrm-ms -o config-report.json
+
+SCOPE
+-----
+Read-only research and local validation only. No key generation, private
+signing-material recovery, licensing-binary patching, validation bypass, or
+activation. Do not commit product keys, PIDs, IIDs, CIDs, or personal license
+data.

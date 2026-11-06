@@ -82,12 +82,33 @@ alone. Their generation should be treated as behavior of the native
 PidGenX/licensing implementation unless a separate authoritative format
 specification is obtained.
 
-The successful local PidGenX test reported a Home Premium / OEM:COA mapping.
-The separate `slmgr /dlv` screenshot reported the currently installed system
-as Home Basic / OEM_COA_SLP with License Status `Licensed`. The screenshots
-show different product identities and a different partial product key; they
-do not establish that the tested Home Premium key was installed or activated.
-Sensitive IDs and complete product keys are intentionally omitted here.
+### 3.1 Native PidGenX test observations
+
+The following results were transcribed from user-supplied screenshots.
+Complete product keys, full Product IDs, Advanced PIDs, Activation IDs,
+Installation IDs, and other machine-specific identifiers are deliberately
+excluded.
+
+| Test | Edition | PidGenX HRESULT | Local result | ProductKeyType | EULA |
+|---|---|---|---|---|---|
+| A | Vista Home Premium | `0x0` | Accepted by installed DLL/config pair | OEM:COA | OEM |
+| B | Vista Home Basic | `0x0` | Accepted by installed DLL/config pair | Retail | MSDN |
+
+Test B is a distinct Retail-channel example. Its screenshot reports
+Home Basic, Edition ID `X13-04106`, ProductKeyType `Retail`, and EULA
+`MSDN`. The exact key and licensing identifiers are not retained.
+
+These are offline PidGenX/configuration acceptance observations. They do
+not prove entitlement, ownership, online activation, or that either key
+was installed on the computer. In particular, the separately supplied
+`slmgr /dlv` screenshot reports the currently installed system as
+Home Basic / `OEM_COA_SLP` with License Status `Licensed`; it does not
+show that Test A or Test B was installed.
+
+The new Retail example demonstrates that the same native PidGenX diagnostic
+can return an accepted result for a Retail configuration as well as the
+earlier OEM:COA configuration. It does not by itself establish the full
+mathematical signature-verification path or generalize to all Retail keys.
 
 ## 4. Interpretation and limitations
 

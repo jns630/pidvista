@@ -47,7 +47,7 @@ each variable-length member remains inside the declared 307-byte region.
 | 11 | 23 | ext_deg1 | 3 |
 | 15 | 27 | ext_deg2 | 2 |
 | 19, 23, 27 | 31, 35, 39 | documented unused words | retained as raw integers |
-| 31 | 43 | num_elements | 14 |
+| 31 | 43 | offset_modulus | 14 |
 | 35, 39, 43 | 47, 51, 55 | documented unused words | retained as raw integers |
 | 47 | 59 | max_quotient byte | 35 |
 | 48 | 60 | H1 radix vector | 14 bytes |
@@ -67,7 +67,10 @@ padding in every one of the 14 records examined. The outer record declares a
 structure to that declared boundary before the point vector begins.
 
 The six words labelled unused are reported without assigning additional
-semantics. Their values are preserved in the JSON report.
+semantics. The word at relative offset 31 is `offset_modulus`, not the point
+count. The number of serialized point entries is derived from
+`size_modulus` (14 in these records), as specified by the public format. The
+parser has been corrected to preserve that distinction.
 
 ## Point-vector and pairing boundaries
 

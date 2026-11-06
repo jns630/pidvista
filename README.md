@@ -172,10 +172,6 @@ Home Premium key was installed or activated.
 Full methodology and caveats:
 [Vista PKEY configuration: randomization and PID-field audit](research/VISTA_PKEYCONFIG_RANDOMIZATION_AND_PID.md)
 
-Machine-readable reports:
-- `vista_pkeyconfig_randomization_audit.csv`
-- `vista_pkeyconfig_randomization_audit.json`
-
 These are configuration observations only. They do not prove ownership,
 transferability, online activation, or global validity, and do not enable
 product-key generation.
